@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retrait</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            text-align: center;
+        }
+        .container {
+            margin: 20px auto;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .progress-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4caf50 0%,
+                #4caf50 calc(var(--progress) * 1%),
+                #ccc calc(var(--progress) * 1%),
+                #ccc 100%
+            );
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
+        .progress-circle span {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        button {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        input {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 300px;
+        }
+        .modal-content p {
+            margin: 0 0 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Retrait</h1>
+        <p>Solde : <strong>5000 FCFA</strong></p>
+        <form id="retrait-form">
+            <input type="text" id="nom" placeholder="Noms et Prénoms" required>
+            <input type="text" id="transaction" placeholder="Numéro de transaction" required>
+            <input type="number" id="montant" placeholder="Montant à retirer" required>
+            <button type="submit">Retirer</button>
+        </form>
+        <div class="progress-circle" style="--progress: 0;">
+            <span>0%</span>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-unlock">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+            <input type="text" id="code" placeholder="Entrez le code">
+            <button id="validate-code">Valider</button>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('retrait-form');
+        const progressCircle = document.querySelector('.progress-circle');
+        const progressSpan = progressCircle.querySelector('span');
+        const modal = document.getElementById('modal-unlock');
+        const modalMessage = document.getElementById('modal-message');
+        const validateCode = document.getElementById('validate-code');
+        const codeInput = document.getElementById('code');
+
+        let progress = 0;
+        let blockStep = 0; // Suivi de l'étape de blocage
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            progress = 0; // Réinitialiser la progression
+            blockStep = 0; // Réinitialiser les étapes de blocage
+            startProgress();
+        });
+
+        function startProgress() {
+            const interval = setInterval(() => {
+                if (blockStep === 0 && progress === 87) {
+                    clearInterval(interval);
+                    showModal("Mme Dupont, veuillez payer les frais de déblocage réseau.");
+                } else if (blockStep === 1 && progress === 98) {
+                    clearInterval(interval);
+                    showModal("Veuillez payer les frais des securisation de compte.");
+                } else if (progress < 100) {
+                    progress++;
+                    updateProgress();
+                } else {
+                    clearInterval(interval);
+                    alert('Félicitations, votre retrait est terminé veuilllez activer les frais de TVA!');
+                }
+            }, 50); // Accéléré pour la démonstration
+        }
+
+        function updateProgress() {
+            progressCircle.style.setProperty('--progress', progress);
+            progressSpan.textContent = `${progress}%`;
+        }
+
+        function showModal(message) {
+            modal.style.display = 'flex';
+            modalMessage.textContent = message;
+        }
+
+        validateCode.addEventListener('click', () => {
+            const code = codeInput.value.trim();
+            if (blockStep === 0 && code === '1234') {
+                blockStep = 1;
+                modal.style.display = 'none';
+                startProgress();
+            } else if (blockStep === 1 && code === '5678') {
+                blockStep = 2;
+                modal.style.display = 'none';
+                startProgress();
+            } else {
+                alert('Code incorrect ! Veuillez réessayer.');
+            }
+            codeInput.value = '';
+        });
+    </script>
+</body>
+</html>
